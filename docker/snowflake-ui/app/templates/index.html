@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snowflake console &middot; local</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Snowflake console</h1>
+      <div class="topbar-meta">
+        <span class="pill" id="status" data-state="unknown">checking&hellip;</span>
+        <span class="meta">{{ endpoint }}</span>
+        <span class="meta">{{ database }}.{{ schema }}</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <h2>Objects</h2>
+          <button type="button" class="ghost" id="refresh" title="Reload the object tree">Reload</button>
+        </div>
+        <div id="tree" class="tree">Loading&hellip;</div>
+      </aside>
+
+      <section class="workspace">
+        <div class="editor">
+          <div class="editor-head">
+            <label for="sql">SQL</label>
+            <div class="editor-actions">
+              <span class="hint">&#8984;/Ctrl + Enter to run</span>
+              <button type="button" class="ghost" id="clear">Clear</button>
+              <button type="button" class="primary" id="run">Run</button>
+            </div>
+          </div>
+          <textarea
+            id="sql"
+            spellcheck="false"
+            placeholder="SELECT * FROM PROD.DS_MODEL.MOD_ROD_SPM_SETPOINT_RECOMMENDATION LIMIT 100"
+          ></textarea>
+        </div>
+
+        <div class="results" id="results">
+          <p class="empty">
+            Run a statement to see results. Multiple statements separated by
+            <code>;</code> run in order, and at most {{ max_rows }} rows are
+            returned per statement.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

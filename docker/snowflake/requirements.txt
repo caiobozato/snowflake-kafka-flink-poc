@@ -1,0 +1,3 @@
+# fakesnow speaks the Snowflake HTTP wire protocol and executes on DuckDB.
+# The [server] extra pulls in starlette + uvicorn.
+fakesnow[server]==0.10.2

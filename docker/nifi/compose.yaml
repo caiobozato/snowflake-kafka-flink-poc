@@ -1,0 +1,73 @@
+# Apache NiFi standing in for a Snowflake Openflow runtime, plus a one-shot
+# container that builds the flow through the NiFi REST API so the pipeline is
+# version-controlled code rather than clicked-together canvas state.
+# Included from the repository-root docker-compose.yml.
+services:
+  nifi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: snowflake-kafka-flink-poc/nifi-openflow-sim:latest
+    container_name: poc-nifi
+    # NiFi generates its own certificate with the container hostname in the
+    # SubjectAltName. Without this, TLS from other containers fails Jetty's
+    # SNI check with "Invalid SNI" before any request is seen.
+    hostname: nifi
+    environment:
+      SINGLE_USER_CREDENTIALS_USERNAME: "${NIFI_USERNAME:-admin}"
+      SINGLE_USER_CREDENTIALS_PASSWORD: "${NIFI_PASSWORD:-openflow-poc-local}"
+      NIFI_WEB_HTTPS_PORT: "8443"
+      # Defaults to the container hostname, which binds one interface only and
+      # leaves localhost (and therefore the healthcheck) unreachable.
+      NIFI_WEB_HTTPS_HOST: "0.0.0.0"
+      # NiFi rejects Host headers it does not recognise, so the host-side
+      # address has to be declared for the port mapping to be usable.
+      NIFI_WEB_PROXY_HOST: "localhost:${NIFI_PORT:-8443},localhost,nifi:8443,nifi"
+      NIFI_JVM_HEAP_INIT: "${NIFI_HEAP_INIT:-512m}"
+      NIFI_JVM_HEAP_MAX: "${NIFI_HEAP_MAX:-2g}"
+    ports:
+      - "${NIFI_PORT:-8443}:8443"
+    depends_on:
+      snowflake:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/opt/nifi/bin-poc/healthcheck.sh"]
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    restart: unless-stopped
+
+  # One-shot: builds the flow through the NiFi REST API, then exits. Idempotent,
+  # so it is safe on every `docker compose up`.
+  nifi-flow:
+    image: python:3.12-slim
+    container_name: poc-nifi-flow
+    command: ["python", "/opt/flow/build_flow.py"]
+    environment:
+      NIFI_API_URL: "https://nifi:8443/nifi-api"
+      NIFI_USERNAME: "${NIFI_USERNAME:-admin}"
+      NIFI_PASSWORD: "${NIFI_PASSWORD:-openflow-poc-local}"
+      # Openflow derives its connection from the account identifier and key-pair
+      # auth; locally the DBCP pool needs a JDBC URL.
+      SNOWFLAKE_JDBC_URL: "jdbc:snowflake://snowflake:8085/?ssl=off&account=fakesnow"
+      SNOWFLAKE_USERNAME: "fake"
+      SNOWFLAKE_PASSWORD: "snow"
+      SNOWFLAKE_DATABASE: "PROD"
+      SNOWFLAKE_SCHEMA: "DS_MODEL"
+      # The Openflow parameter is a stream FQN. Locally it is the CDC view that
+      # reproduces the stream's output shape.
+      SNOWFLAKE_STREAM_FQN: "${SNOWFLAKE_STREAM_FQN:-PROD.DS_MODEL.MOD_ROD_SPM_SETPOINT_RECOMMENDATION_CDC}"
+      CHANGE_WATERMARK_COLUMN: "${CHANGE_WATERMARK_COLUMN:-UPDATED_ON}"
+      KAFKA_BOOTSTRAP_SERVERS: "redpanda:9092"
+      KAFKA_TOPIC: "${KAFKA_CDC_TOPIC:-snowflake.ds_model.mod_rod_spm_setpoint_recommendation}"
+      KAFKA_MESSAGE_KEY_FIELD: "${KAFKA_MESSAGE_KEY_FIELD:-WELL_ID}"
+      POLL_INTERVAL: "${NIFI_POLL_INTERVAL:-10 sec}"
+    volumes:
+      - ./bin/build_flow.py:/opt/flow/build_flow.py:ro
+    depends_on:
+      nifi:
+        condition: service_healthy
+    restart: "no"

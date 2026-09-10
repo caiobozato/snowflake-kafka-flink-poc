@@ -1,0 +1,79 @@
+# Apache Flink: consumes the Snowflake CDC topic, transforms it, publishes the
+# result back to Kafka. A JobManager, one TaskManager, and a one-shot container
+# that submits the SQL pipeline.
+# Included from the repository-root docker-compose.yml.
+services:
+  flink-jobmanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: snowflake-kafka-flink-poc/flink:latest
+    container_name: poc-flink-jobmanager
+    command: jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        rest.address: 0.0.0.0
+        parallelism.default: 1
+        restart-strategy.type: fixed-delay
+        restart-strategy.fixed-delay.attempts: 10
+        restart-strategy.fixed-delay.delay: 10 s
+    ports:
+      - "${FLINK_UI_PORT:-8081}:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "-o", "/dev/null", "http://localhost:8081/overview"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 15
+    restart: unless-stopped
+
+  flink-taskmanager:
+    image: snowflake-kafka-flink-poc/flink:latest
+    container_name: poc-flink-taskmanager
+    command: taskmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: ${FLINK_TASK_SLOTS:-4}
+    depends_on:
+      flink-jobmanager:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # One-shot: submits the pipeline, then exits. The job keeps running on the
+  # cluster afterwards.
+  flink-sql:
+    image: snowflake-kafka-flink-poc/flink:latest
+    container_name: poc-flink-sql
+    # Passed as the command, not the entrypoint: the image's entrypoint applies
+    # FLINK_PROPERTIES to config.yaml and then passes unknown commands through.
+    # Overriding it leaves the SQL client with no JobManager address, and the
+    # INSERT fails with "Connection refused" after the DDL succeeds.
+    command: ["/opt/flink/bin-poc/submit_sql.sh"]
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        rest.address: flink-jobmanager
+        rest.port: 8081
+        # The job graph is built client-side, so the restart strategy has to be
+        # set here too, not only on the JobManager.
+        restart-strategy.type: fixed-delay
+        restart-strategy.fixed-delay.attempts: 10
+        restart-strategy.fixed-delay.delay: 10 s
+      FLINK_REST_URL: "http://flink-jobmanager:8081"
+      KAFKA_BOOTSTRAP_SERVERS: "redpanda:9092"
+      SOURCE_TOPIC: "${KAFKA_CDC_TOPIC:-snowflake.ds_model.mod_rod_spm_setpoint_recommendation}"
+      SINK_TOPIC: "${FLINK_SINK_TOPIC:-ambyio.swo-poc-control-system.lufkin.speedRangeRecommendationUpdated}"
+      CONSUMER_GROUP: "${FLINK_CONSUMER_GROUP:-flink-setpoint-recommendation}"
+      SCAN_STARTUP_MODE: "${FLINK_SCAN_STARTUP_MODE:-earliest-offset}"
+    depends_on:
+      flink-taskmanager:
+        condition: service_started
+      flink-jobmanager:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      redpanda-topics:
+        condition: service_completed_successfully
+    restart: "no"

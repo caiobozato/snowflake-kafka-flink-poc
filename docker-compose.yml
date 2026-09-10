@@ -1,0 +1,14 @@
+# Repository-root Compose entrypoint.
+#
+# Each container owns a directory under docker/<service>/ holding its Dockerfile,
+# its compose.yaml fragment and any assets it needs. Add new services by dropping
+# another fragment in the include list below.
+name: snowflake-kafka-flink-poc
+
+include:
+  - docker/snowflake/compose.yaml
+  - docker/snowflake-ui/compose.yaml
+  - docker/redpanda/compose.yaml
+  - docker/kafka-ui/compose.yaml
+  - docker/nifi/compose.yaml
+  - docker/flink/compose.yaml
