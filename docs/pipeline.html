@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Setpoint recommendation pipeline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --charcoal: #36454f;
+        --orange: #f16722;
+        --teal-light: #35c6c3;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        padding: 32px;
+        background: var(--charcoal);
+        font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .stage {
+        width: 100%;
+        max-width: 1600px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+      }
+      .stage svg { display: block; width: 100%; height: auto; }
+      footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--teal-light);
+        font-size: 13px;
+        letter-spacing: 0.02em;
+      }
+      footer b { color: #ffffff; font-weight: 500; }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--orange);
+      }
+      @media print {
+        body { background: #ffffff; padding: 0; }
+        .stage { box-shadow: none; }
+        footer { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Snowflake to Kafka to Flink pipeline">
+        <rect width="1600" height="900" fill="#ffffff"/>
+        <text x="64" y="112" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="42" font-weight="500" fill="#000000">Setpoint recommendation pipeline</text>
+        <text x="64" y="150" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="19" fill="#6b7a83">Snowflake change capture &#8594; Kafka &#8594; Flink transform &#8594; Kafka, running locally on Docker</text>
+        <rect x="64" y="176" width="96" height="4" fill="#f16722"/>
+        <path d="M 382.0 290 L 382.0 278 L 598.0 278 L 598.0 290" fill="none" stroke="#f16722" stroke-width="2"/>
+        <path d="M 484.0 290 L 490.0 300 L 496.0 290 Z" fill="#f16722"/>
+        <text x="490.0" y="264" text-anchor="middle" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="500" fill="#f16722">Openflow connector in production</text>
+        <line x1="302.0" y1="396.0" x2="363.0" y2="396.0" stroke="#36454f" stroke-width="2" opacity="0.35"/>
+        <path d="M 363.0 390.0 L 373.0 396.0 L 363.0 402.0 Z" fill="#36454f" opacity="0.55"/>
+        <line x1="612.0" y1="396.0" x2="673.0" y2="396.0" stroke="#36454f" stroke-width="2" opacity="0.35"/>
+        <path d="M 673.0 390.0 L 683.0 396.0 L 673.0 402.0 Z" fill="#36454f" opacity="0.55"/>
+        <line x1="922.0" y1="396.0" x2="983.0" y2="396.0" stroke="#36454f" stroke-width="2" opacity="0.35"/>
+        <path d="M 983.0 390.0 L 993.0 396.0 L 983.0 402.0 Z" fill="#36454f" opacity="0.55"/>
+        <line x1="1232.0" y1="396.0" x2="1293.0" y2="396.0" stroke="#36454f" stroke-width="2" opacity="0.35"/>
+        <path d="M 1293.0 390.0 L 1303.0 396.0 L 1293.0 402.0 Z" fill="#36454f" opacity="0.55"/>
+        <rect x="64.0" y="330" width="232" height="132" rx="6" fill="#36454f"/>
+        <text x="84.0" y="362" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="1.4" fill="#35c6c3" opacity="0.95">SOURCE</text>
+        <text x="84.0" y="400" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="27.0" font-weight="500" fill="#ffffff">Snowflake</text>
+        <text x="64.0" y="492" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">MOD_ROD_SPM_SETPOINT_</text>
+        <text x="64.0" y="513" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">RECOMMENDATION</text>
+        <text x="64.0" y="534" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">24 columns, primary key on</text>
+        <text x="64.0" y="555" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">tenant + well + effective date</text>
+        <rect x="374.0" y="330" width="232" height="132" rx="6" fill="#f16722"/>
+        <text x="394.0" y="362" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="1.4" fill="#ffffff" opacity="0.8">CHANGE CAPTURE</text>
+        <text x="394.0" y="400" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="27.0" font-weight="500" fill="#ffffff">NiFi</text>
+        <text x="374.0" y="492" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">Polls the _CDC view on the</text>
+        <text x="374.0" y="513" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">UPDATED_ON</text>
+        <text x="374.0" y="534" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">watermark, one message</text>
+        <text x="374.0" y="555" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">per changed row</text>
+        <rect x="684.0" y="330" width="232" height="132" rx="6" fill="#1f99a2"/>
+        <text x="704.0" y="362" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="1.4" fill="#ffffff" opacity="0.8">TOPIC</text>
+        <text x="704.0" y="400" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="27.0" font-weight="500" fill="#ffffff">CDC events</text>
+        <text x="684.0" y="492" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">snowflake.ds_model.</text>
+        <text x="684.0" y="513" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">mod_rod_spm_setpoint_</text>
+        <text x="684.0" y="534" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">recommendation</text>
+        <text x="684.0" y="555" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">all columns + METADATA_*</text>
+        <rect x="994.0" y="330" width="232" height="132" rx="6" fill="#36454f"/>
+        <text x="1014.0" y="362" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="1.4" fill="#35c6c3" opacity="0.95">TRANSFORM</text>
+        <text x="1014.0" y="400" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="27.0" font-weight="500" fill="#ffffff">Flink</text>
+        <text x="994.0" y="492" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">Validates and reshapes</text>
+        <text x="994.0" y="513" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">into the event contract</text>
+        <text x="994.0" y="534" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">sql/20_transform.sql</text>
+        <text x="994.0" y="555" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">keyed by well</text>
+        <rect x="1304.0" y="330" width="232" height="132" rx="6" fill="#1f99a2"/>
+        <text x="1324.0" y="362" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="1.4" fill="#ffffff" opacity="0.8">TOPIC</text>
+        <text x="1324.0" y="400" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="27.0" font-weight="500" fill="#ffffff">Speed range</text>
+        <text x="1304.0" y="492" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">ambyio.swo-poc-control-</text>
+        <text x="1304.0" y="513" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">system.lufkin.speedRange</text>
+        <text x="1304.0" y="534" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">RecommendationUpdated</text>
+        <text x="1304.0" y="555" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7a83">min / max / status envelope</text>
+        <text x="64" y="594" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="500" letter-spacing="1.2" fill="#6b7a83">LOCAL INTERFACES</text>
+        <text x="64" y="622" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="14" fill="#36454f">Snowflake console</text>
+        <text x="254" y="622" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#1f99a2">localhost:8086</text>
+        <text x="64" y="647" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="14" fill="#36454f">Kafka UI</text>
+        <text x="254" y="647" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#1f99a2">localhost:8090</text>
+        <text x="64" y="672" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="14" fill="#36454f">NiFi</text>
+        <text x="254" y="672" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#1f99a2">localhost:8443</text>
+        <text x="64" y="697" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="14" fill="#36454f">Flink</text>
+        <text x="254" y="697" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#1f99a2">localhost:8081</text>
+        <text x="470" y="594" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="500" letter-spacing="1.2" fill="#6b7a83">CHANGE IN SNOWFLAKE</text>
+        <circle cx="475" cy="618" r="4" fill="#1f99a2"/>
+        <text x="490" y="622" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#36454f">INSERT</text>
+        <text x="806" y="622" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f99a2">published</text>
+        <circle cx="475" cy="643" r="4" fill="#1f99a2"/>
+        <text x="490" y="647" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#36454f">UPDATE that bumps UPDATED_ON</text>
+        <text x="806" y="647" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f99a2">published</text>
+        <circle cx="475" cy="668" r="4" fill="#f16722"/>
+        <text x="490" y="672" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#36454f">INSERT with a backdated UPDATED_ON</text>
+        <text x="806" y="672" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#f16722">skipped</text>
+        <circle cx="475" cy="693" r="4" fill="#f16722"/>
+        <text x="490" y="697" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#36454f">DELETE</text>
+        <text x="806" y="697" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13.5" fill="#f16722">not observable</text>
+        <text x="470" y="734" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7a83">A real Snowflake stream also emits deletes.</text>
+        <text x="994.0" y="594" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="500" letter-spacing="1.2" fill="#6b7a83">PUBLISHED EVENT</text>
+        <text x="994.0" y="620" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">{</text>
+        <text x="994.0" y="638" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">  "data": {</text>
+        <text x="994.0" y="656" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">    "classification": 1,</text>
+        <text x="994.0" y="674" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">    "createdOn": "2026-09-09T23:13:17.443Z",</text>
+        <text x="994.0" y="692" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">    "max": 5.0,</text>
+        <text x="994.0" y="710" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">    "min": 3.6,</text>
+        <text x="994.0" y="728" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">    "status": 1,</text>
+        <text x="994.0" y="746" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">    "statusName": "Accepted"</text>
+        <text x="994.0" y="764" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">  }</text>
+        <text x="994.0" y="782" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" fill="#36454f">}</text>
+        <line x1="64" y1="830" x2="1536" y2="830" stroke="#d9dee1" stroke-width="1"/>
+        <text x="64" y="856" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#6b7a83">Local stack: fakesnow &#183; Apache NiFi &#183; Redpanda &#183; Apache Flink. The Kafka message contracts match production.</text>
+        <circle r="6" fill="#35c6c3"><animateMotion dur="3s" begin="0.0s" repeatCount="indefinite" path="M 302.0 396.0 L 362.0 396.0" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/><animate attributeName="opacity" dur="3s" begin="0.0s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.12;0.88;1"/></circle>
+        <circle r="11" fill="#35c6c3" opacity="0.18"><animateMotion dur="3s" begin="0.0s" repeatCount="indefinite" path="M 302.0 396.0 L 362.0 396.0"/><animate attributeName="opacity" dur="3s" begin="0.0s" repeatCount="indefinite" values="0;0.18;0.18;0" keyTimes="0;0.12;0.88;1"/></circle>
+        <rect x="374.0" y="330" width="232" height="132" rx="6" fill="#ffffff" opacity="0"><animate attributeName="opacity" dur="3s" begin="0.0s" repeatCount="indefinite" values="0;0;0.16;0" keyTimes="0;0.78;0.9;1"/></rect>
+        <circle r="6" fill="#35c6c3"><animateMotion dur="3s" begin="0.75s" repeatCount="indefinite" path="M 612.0 396.0 L 672.0 396.0" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/><animate attributeName="opacity" dur="3s" begin="0.75s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.12;0.88;1"/></circle>
+        <circle r="11" fill="#35c6c3" opacity="0.18"><animateMotion dur="3s" begin="0.75s" repeatCount="indefinite" path="M 612.0 396.0 L 672.0 396.0"/><animate attributeName="opacity" dur="3s" begin="0.75s" repeatCount="indefinite" values="0;0.18;0.18;0" keyTimes="0;0.12;0.88;1"/></circle>
+        <rect x="684.0" y="330" width="232" height="132" rx="6" fill="#ffffff" opacity="0"><animate attributeName="opacity" dur="3s" begin="0.75s" repeatCount="indefinite" values="0;0;0.16;0" keyTimes="0;0.78;0.9;1"/></rect>
+        <circle r="6" fill="#35c6c3"><animateMotion dur="3s" begin="1.5s" repeatCount="indefinite" path="M 922.0 396.0 L 982.0 396.0" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/><animate attributeName="opacity" dur="3s" begin="1.5s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.12;0.88;1"/></circle>
+        <circle r="11" fill="#35c6c3" opacity="0.18"><animateMotion dur="3s" begin="1.5s" repeatCount="indefinite" path="M 922.0 396.0 L 982.0 396.0"/><animate attributeName="opacity" dur="3s" begin="1.5s" repeatCount="indefinite" values="0;0.18;0.18;0" keyTimes="0;0.12;0.88;1"/></circle>
+        <rect x="994.0" y="330" width="232" height="132" rx="6" fill="#ffffff" opacity="0"><animate attributeName="opacity" dur="3s" begin="1.5s" repeatCount="indefinite" values="0;0;0.16;0" keyTimes="0;0.78;0.9;1"/></rect>
+        <circle r="6" fill="#35c6c3"><animateMotion dur="3s" begin="2.25s" repeatCount="indefinite" path="M 1232.0 396.0 L 1292.0 396.0" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/><animate attributeName="opacity" dur="3s" begin="2.25s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.12;0.88;1"/></circle>
+        <circle r="11" fill="#35c6c3" opacity="0.18"><animateMotion dur="3s" begin="2.25s" repeatCount="indefinite" path="M 1232.0 396.0 L 1292.0 396.0"/><animate attributeName="opacity" dur="3s" begin="2.25s" repeatCount="indefinite" values="0;0.18;0.18;0" keyTimes="0;0.12;0.88;1"/></circle>
+        <rect x="1304.0" y="330" width="232" height="132" rx="6" fill="#ffffff" opacity="0"><animate attributeName="opacity" dur="3s" begin="2.25s" repeatCount="indefinite" values="0;0;0.16;0" keyTimes="0;0.78;0.9;1"/></rect>
+      </svg>
+    </div>
+    <footer>
+      <span class="dot"></span>
+      <span><b>snowflake-kafka-flink-poc</b> &mdash; the animation loops; every
+      label is the real object name from the running stack</span>
+    </footer>
+  </body>
+</html>

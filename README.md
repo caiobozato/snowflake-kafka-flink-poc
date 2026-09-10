@@ -16,6 +16,11 @@ RECOMMENDATION        _CDC view)          spm_setpoint_                         
 Everything is containerised — no Snowflake account, no cloud resources, no
 credentials to obtain.
 
+![Setpoint recommendation pipeline](docs/pipeline.png)
+
+An animated version is in [`docs/`](docs/README.md) — open `docs/pipeline.html`
+in a browser to present it.
+
 ## What is real and what is simulated
 
 | Piece | Locally | In production |
