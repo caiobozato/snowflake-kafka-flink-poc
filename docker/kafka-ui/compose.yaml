@@ -1,0 +1,23 @@
+# kafbat/kafka-ui: web UI for topics, messages, consumer groups and schemas.
+# Talks to Redpanda over the plain Kafka API, so no Redpanda-specific wiring.
+# Included from the repository-root docker-compose.yml.
+services:
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:v1.5.0
+    container_name: poc-kafka-ui
+    environment:
+      SPRING_CONFIG_ADDITIONALLOCATION: /etc/kafkaui/kafka-ui.yaml
+    ports:
+      - "${KAFKA_UI_PORT:-8090}:8080"
+    volumes:
+      - ./config/kafka-ui.yaml:/etc/kafkaui/kafka-ui.yaml:ro
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped

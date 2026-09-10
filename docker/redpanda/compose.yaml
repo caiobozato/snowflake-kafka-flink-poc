@@ -1,0 +1,71 @@
+# Redpanda broker: Kafka API compatible, single binary, no ZooKeeper/KRaft setup.
+# Included from the repository-root docker-compose.yml.
+services:
+  redpanda:
+    image: redpandadata/redpanda:v26.2.2
+    container_name: poc-redpanda
+    # dev-container mode relaxes the production checks (memory, disk, cores) that
+    # would otherwise refuse to start on a laptop.
+    #
+    # Each API is bound twice: the "internal" listener carries the in-network
+    # address other containers use, the "external" one carries localhost so
+    # clients on the host resolve the broker correctly after the port mapping.
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --default-log-level=${REDPANDA_LOG_LEVEL:-info}
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:${REDPANDA_KAFKA_PORT:-19092}
+      - --pandaproxy-addr=internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr=internal://redpanda:8082,external://localhost:${REDPANDA_PROXY_PORT:-18082}
+      - --schema-registry-addr=internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr=redpanda:33145
+      - --advertise-rpc-addr=redpanda:33145
+    ports:
+      - "${REDPANDA_KAFKA_PORT:-19092}:19092"     # Kafka API
+      - "${REDPANDA_SCHEMA_REGISTRY_PORT:-18081}:18081"  # Schema Registry
+      - "${REDPANDA_PROXY_PORT:-18082}:18082"     # HTTP proxy (pandaproxy)
+      - "${REDPANDA_ADMIN_PORT:-19644}:9644"      # Admin API / metrics
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  # One-shot: creates the POC's topics, then exits. Flink's Kafka source resolves
+  # partitions through the AdminClient, which does not auto-create, so the job
+  # fails with UnknownTopicOrPartitionException if it submits before the
+  # producer has published anything.
+  redpanda-topics:
+    image: redpandadata/redpanda:v26.2.2
+    container_name: poc-redpanda-topics
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        for topic in "$$CDC_TOPIC" "$$ENRICHED_TOPIC"; do
+          echo "ensuring topic $$topic"
+          rpk topic create "$$topic" \
+            --partitions "$$TOPIC_PARTITIONS" --replicas 1 \
+            --brokers redpanda:9092 || true
+        done
+        rpk topic list --brokers redpanda:9092
+    environment:
+      CDC_TOPIC: "${KAFKA_CDC_TOPIC:-snowflake.ds_model.mod_rod_spm_setpoint_recommendation}"
+      ENRICHED_TOPIC: "${FLINK_SINK_TOPIC:-ambyio.swo-poc-control-system.lufkin.speedRangeRecommendationUpdated}"
+      # One partition keeps offsets easy to read in a demo. Raise it and the
+      # WELL_ID message key still preserves per-well ordering.
+      TOPIC_PARTITIONS: "${REDPANDA_TOPIC_PARTITIONS:-1}"
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  redpanda-data:

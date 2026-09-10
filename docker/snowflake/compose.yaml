@@ -1,0 +1,25 @@
+# Local Snowflake service. Included from the repository-root docker-compose.yml,
+# so all paths here are relative to docker/snowflake/.
+services:
+  snowflake:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: snowflake-kafka-flink-poc/snowflake-local:latest
+    container_name: poc-snowflake
+    environment:
+      # Port inside the container. Keep in sync with the mapping below.
+      FAKESNOW_PORT: "8085"
+      FAKESNOW_LOG_LEVEL: "${SNOWFLAKE_LOG_LEVEL:-info}"
+      # Empty (the default) keeps every database in memory, so each restart
+      # replays the init SQL from scratch. Set to /var/lib/snowflake to keep
+      # data in the snowflake-data volume across restarts.
+      FAKESNOW_DB_PATH: "${SNOWFLAKE_DB_PATH-}"
+    ports:
+      - "${SNOWFLAKE_PORT:-8085}:8085"
+    volumes:
+      - snowflake-data:/var/lib/snowflake
+    restart: unless-stopped
+
+volumes:
+  snowflake-data:

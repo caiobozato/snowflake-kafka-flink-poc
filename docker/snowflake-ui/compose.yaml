@@ -1,0 +1,23 @@
+# Web SQL console for the local Snowflake service.
+# Included from the repository-root docker-compose.yml.
+services:
+  snowflake-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: snowflake-kafka-flink-poc/snowflake-ui:latest
+    container_name: poc-snowflake-ui
+    environment:
+      # Reached over the Compose network, so the internal port, not the host one.
+      SNOWFLAKE_HOST: snowflake
+      SNOWFLAKE_PORT: "8085"
+      SNOWFLAKE_DATABASE: "${SNOWFLAKE_UI_DATABASE:-PROD}"
+      SNOWFLAKE_SCHEMA: "${SNOWFLAKE_UI_SCHEMA:-DS_MODEL}"
+      SNOWFLAKE_UI_MAX_ROWS: "${SNOWFLAKE_UI_MAX_ROWS:-1000}"
+      SNOWFLAKE_UI_LOG_LEVEL: "${SNOWFLAKE_UI_LOG_LEVEL:-info}"
+    ports:
+      - "${SNOWFLAKE_UI_PORT:-8086}:8086"
+    depends_on:
+      snowflake:
+        condition: service_healthy
+    restart: unless-stopped

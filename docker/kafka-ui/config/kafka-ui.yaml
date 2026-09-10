@@ -1,0 +1,23 @@
+# kafbat/kafka-ui configuration. Mounted read-only and selected with
+# SPRING_CONFIG_ADDITIONALLOCATION, so the wiring lives in version control
+# rather than in a wall of KAFKA_CLUSTERS_0_* environment variables.
+kafka:
+  clusters:
+    - name: local
+      bootstrapServers: redpanda:9092
+      schemaRegistry: http://redpanda:8081
+
+auth:
+  type: DISABLED
+
+# Lets clusters be added and edited from the UI at runtime.
+dynamic:
+  config:
+    enabled: true
+
+server:
+  # Netty defaults to an 8KB header limit, which browsers exceed once enough
+  # cookies have accumulated for localhost from other dev tools on other ports.
+  # The UI then answers 431 for every request and renders as a blank page,
+  # while curl (sending no cookies) works fine.
+  max-http-request-header-size: 64KB
