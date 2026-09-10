@@ -2,3 +2,6 @@
 .context/
 __pycache__/
 *.py[cod]
+
+# Diagram build intermediates; ./docs/build.sh regenerates them.
+docs/frames/
